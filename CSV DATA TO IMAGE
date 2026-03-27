@@ -1,0 +1,91 @@
+from PIL import Image
+import numpy as np
+import csv
+import sys
+import os
+
+input_csv_filename = "pixel_data_output.csv"
+
+
+output_image_filename = "reconstructed_image.png"
+
+print(f"Attempting to reconstruct image from '{input_csv_filename}'...")
+
+pixel_data = []
+max_x = -1
+max_y = -1
+is_grayscale = False
+
+try:
+    with open(input_csv_filename, 'r', newline='') as csvfile:
+        csv_reader = csv.reader(csvfile)
+
+        header = next(csv_reader)
+
+        if "R" in header and "G" in header and "B" in header:
+            print("Detected RGB image data in CSV.")
+            is_grayscale = False
+            x_idx = header.index("X")
+            y_idx = header.index("Y")
+            r_idx = header.index("R")
+            g_idx = header.index("G")
+            b_idx = header.index("B")
+        elif "Intensity" in header:
+            print("Detected Grayscale image data in CSV.")
+            is_grayscale = True
+            x_idx = header.index("X")
+            y_idx = header.index("Y")
+            intensity_idx = header.index("Intensity")
+        else:
+            print("Error: CSV header does not match expected RGB (X,Y,R,G,B,Hex) or Grayscale (X,Y,Intensity) format.")
+            sys.exit(1)
+
+        for row in csv_reader:
+            try:
+                x = int(row[x_idx])
+                y = int(row[y_idx])
+                max_x = max(max_x, x)
+                max_y = max(max_y, y)
+
+                if not is_grayscale:
+                    r = int(row[r_idx])
+                    g = int(row[g_idx])
+                    b = int(row[b_idx])
+                    pixel_data.append(((x, y), (r, g, b)))
+                else:
+                    intensity = int(row[intensity_idx])
+                    pixel_data.append(((x, y), intensity))
+
+            except (ValueError, IndexError) as e:
+                print(f"Skipping malformed row: {row}. Error: {e}")
+                continue
+
+except FileNotFoundError:
+    print(f"Error: CSV file '{input_csv_filename}' not found. Please upload it to Colab.")
+    sys.exit(1)
+except Exception as e:
+    print(f"An error occurred while reading the CSV: {e}")
+    sys.exit(1)
+
+image_width = max_x + 1
+image_height = max_y + 1
+
+if not pixel_data:
+    print("Error: No valid pixel data found in the CSV. Cannot create an image.")
+    sys.exit(1)
+
+print(f"Inferred image dimensions: {image_width}x{image_height}")
+
+if not is_grayscale:
+    new_image = Image.new('RGB', (image_width, image_height), color = (0, 0, 0))
+else:
+    new_image = Image.new('L', (image_width, image_height), color = 0)
+pixels = new_image.load()
+print("Setting pixel values...")
+for (x, y), color_or_intensity in pixel_data:
+    pixels[x, y] = color_or_intensity
+new_image.save(output_image_filename)
+print(f"Image successfully reconstructed and saved as '{output_image_filename}'.")
+print("\nReconstructed Image:")
+display(new_image)
+print("You can find and download the image using the folder icon (Files) on the left sidebar.")
