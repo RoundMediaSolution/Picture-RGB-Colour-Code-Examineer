@@ -12,9 +12,9 @@ Processing: The script iterates through the image matrix using numpy for high-sp
 Data Conversion: RGB tuples are converted to Hex strings via bit-shifting logic.Export: A .csv file is compiled and prompted for immediate download.
 
 **Technical Workflow**
-Image Input     :   1. Uploads a file (.jpg, .png, etc.) directly to the Colab runtime.
-                    2. Put the image name into the img_path = "Picture1.png
-                    3. Run the Script
+Image Input     :   <br> 1. Uploads a file (.jpg, .png, etc.) directly to the Colab runtime.
+                    <br> 2. Put the image name into the img_path = "Picture1.png
+                    <br> 3. Run the Script
 
 Processing      : The script iterates through the image matrix using numpy for high-speed array manipulation.
 
